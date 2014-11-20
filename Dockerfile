@@ -23,9 +23,10 @@ ADD config/nginx-default.conf /etc/nginx/sites-available/default
 ADD config/php.ini /etc/php5/fpm/php.ini
 
 RUN cd /usr/share/nginx/html && \
-    wget http://builds.piwik.org/piwik-2.9.0.tar.gz && \
-    tar -xzf piwik-2.9.0.tar.gz && \
-    rm piwik-2.9.0.tar.gz && \
+    export PIWIK_VERSION=2.9.1 && \
+    wget http://builds.piwik.org/piwik-${PIWIK_VERSION}.tar.gz && \
+    tar -xzf piwik-${PIWIK_VERSION}.tar.gz && \
+    rm piwik-${PIWIK_VERSION}.tar.gz && \
     mv piwik/* . && \
     rm -r piwik && \
     chown -R www-data:www-data /usr/share/nginx/html && \
@@ -42,6 +43,7 @@ RUN cd /usr/share/nginx/html/misc && \
 
 ADD config/piwik-schema.sql /usr/share/nginx/html/config/base-schema.sql
 
+ADD scripts/generate-certs.sh /etc/my_init.d/05-certs.sh
 ADD scripts/init-piwik.sh /etc/my_init.d/10-piwik.sh
 
 RUN touch /etc/service/sshd/down
