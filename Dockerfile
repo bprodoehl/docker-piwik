@@ -5,7 +5,10 @@ ENV HOME /root
 CMD ["/sbin/my_init"]
 EXPOSE 80 443
 
-RUN echo "deb http://ppa.launchpad.net/nginx/stable/ubuntu $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/nginx-stable.list
+# 0.9.15 is getting a bit long in the tooth, so lets grab security fixes
+RUN apt-get update && apt-get -y dist-upgrade
+
+RUN echo "deb http://ppa.launchpad.net/nginx/development/ubuntu $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/nginx-development.list
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys C300EE8C
 RUN apt-get update -q && \
     apt-get install -qy mysql-client nginx php5-cli php5-gd php5-fpm php5-json \
@@ -23,13 +26,14 @@ ADD config/nginx-default.conf /etc/nginx/sites-available/default
 ADD config/php.ini /etc/php5/fpm/php.ini
 
 RUN cd /usr/share/nginx/html && \
-    export PIWIK_VERSION=2.9.1 && \
+    export PIWIK_VERSION=2.10.0 && \
     wget http://builds.piwik.org/piwik-${PIWIK_VERSION}.tar.gz && \
     tar -xzf piwik-${PIWIK_VERSION}.tar.gz && \
     rm piwik-${PIWIK_VERSION}.tar.gz && \
     mv piwik/* . && \
     rm -r piwik && \
     chown -R www-data:www-data /usr/share/nginx/html && \
+    mkdir /usr/share/nginx/html/tmp && \
     chmod 0770 /usr/share/nginx/html/tmp && \
     chmod 0770 /usr/share/nginx/html/config && \
     chmod 0600 /usr/share/nginx/html/config/* && \
