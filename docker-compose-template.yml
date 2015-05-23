@@ -1,0 +1,19 @@
+piwik:
+  build: .
+  links:
+    - mysql:db
+  ports:
+    - "8091:80"
+  environment:
+    - PIWIK_SEED_DATABASE=true
+    - PIWIK_USER=admin
+    - PIWIK_PASSWORD=password
+mysql:
+  image: mysql:latest
+  environment:
+    - MYSQL_USER=piwik
+    - MYSQL_PASSWORD=piwik
+    - MYSQL_ROOT_PASSWORD=piwik
+    - MYSQL_DATABASE=piwik
+  volumes:
+    - /media/srv/piwik/mysql:/var/lib/mysql

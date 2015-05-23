@@ -18,16 +18,28 @@ schema = \"Mysql\"" > $CONFIG_FILE
 fi
 
 # MySQL database host
-if [ ! -z $DB_1_PORT_3306_TCP_ADDR ]; then
-  DB_HOST=$DB_1_PORT_3306_TCP_ADDR
+if [ ! -z $DB_PORT_3306_TCP_ADDR ]; then
+  DB_HOST=$DB_PORT_3306_TCP_ADDR
 fi
 
 if [ ! -z $DB_HOST ]; then
   sed -i "/host =/c\host = \"$DB_HOST\"" $CONFIG_FILE
 fi
 
-if [ ! -z $DB_1_PORT_3306_TCP_PORT ]; then
-  DB_PORT=$DB_1_PORT_3306_TCP_PORT
+if [ ! -z $DB_PORT_3306_TCP_PORT ]; then
+  DB_PORT=$DB_PORT_3306_TCP_PORT
+fi
+
+if [ ! -z $DB_ENV_MYSQL_DATABASE ]; then
+  DB_NAME=$DB_ENV_MYSQL_DATABASE
+fi
+
+if [ ! -z $DB_ENV_MYSQL_USER ]; then
+  DB_USER=$DB_ENV_MYSQL_USER
+fi
+
+if [ ! -z $DB_ENV_MYSQL_PASSWORD ]; then
+  DB_PASSWORD=$DB_ENV_MYSQL_PASSWORD
 fi
 
 if [ ! -z $DB_PORT ]; then
@@ -56,6 +68,7 @@ if [ ! -z $DB_TABLES_PREFIX ]; then
   sed -i "/tables_prefix =/c\tables_prefix = \"$DB_TABLES_PREFIX\"" $CONFIG_FILE
 fi
 
+DB_CHARSET=utf8
 # The charset of the database for Piwik
 if [ ! -z $DB_CHARSET ]; then
   sed -i "/charset =/c\charset = \"$DB_CHARSET\"" $CONFIG_FILE
@@ -66,8 +79,13 @@ cat $CONFIG_FILE
 chown www-data:www-data $CONFIG_FILE
 
 if [ ! -z $PIWIK_SEED_DATABASE ]; then
-  mysql --user=$DB_USER --password=$DB_PASSWORD --host=$DB_HOST \
+  mysql --connect-timeout=20 --user=$DB_USER --password=$DB_PASSWORD --host=$DB_HOST \
         --port=$DB_PORT -D $DB_NAME < /usr/share/nginx/html/config/base-schema.sql
+  if [ $? -eq 1 ]; then
+    sleep 20
+    mysql --connect-timeout=20 --user=$DB_USER --password=$DB_PASSWORD --host=$DB_HOST \
+        --port=$DB_PORT -D $DB_NAME < /usr/share/nginx/html/config/base-schema.sql
+  fi
   SITE_SQL=$(cat <<EOF
         INSERT INTO \`piwik_site\`
         VALUES (1,
@@ -78,8 +96,8 @@ if [ ! -z $PIWIK_SEED_DATABASE ]; then
                 1,
                 '',
                 '',
-                'UTC',
-                'USD',
+                'Europe/Paris',
+                'EUR',
                 '',
                 '',
                 '',
@@ -88,7 +106,7 @@ if [ ! -z $PIWIK_SEED_DATABASE ]; then
                 0);
 EOF
 )
-  echo $SITE_SQL | mysql --user=$DB_USER --password=$DB_PASSWORD --host=$DB_HOST \
+  echo $SITE_SQL | mysql --connect-timeout=20 --user=$DB_USER --password=$DB_PASSWORD --host=$DB_HOST \
         --port=$DB_PORT -D $DB_NAME
 fi
 
@@ -106,6 +124,6 @@ if [ ! -z $PIWIK_USER ] && [ ! -z $PIWIK_PASSWORD ]; then
 EOF
 )
   echo $USER_SQL;
-  echo $USER_SQL | mysql --user=$DB_USER --password=$DB_PASSWORD --host=$DB_HOST \
+  echo $USER_SQL | mysql --connect-timeout=20 --user=$DB_USER --password=$DB_PASSWORD --host=$DB_HOST \
         --port=$DB_PORT -D $DB_NAME
 fi

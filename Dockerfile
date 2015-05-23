@@ -26,18 +26,18 @@ ADD config/nginx-default.conf /etc/nginx/sites-available/default
 ADD config/php.ini /etc/php5/fpm/php.ini
 
 RUN cd /usr/share/nginx/html && \
-    export PIWIK_VERSION=2.10.0 && \
-    wget http://builds.piwik.org/piwik-${PIWIK_VERSION}.tar.gz && \
-    tar -xzf piwik-${PIWIK_VERSION}.tar.gz && \
-    rm piwik-${PIWIK_VERSION}.tar.gz && \
+    wget http://builds.piwik.org/piwik.tar.gz && \
+    tar -xzf piwik.tar.gz && \
+    rm piwik.tar.gz && \
     mv piwik/* . && \
     rm -r piwik && \
     chown -R www-data:www-data /usr/share/nginx/html && \
-    mkdir /usr/share/nginx/html/tmp && \
-    chmod 0770 /usr/share/nginx/html/tmp && \
+    chmod 0755 /usr/share/nginx/html/tmp && \
+    chmod 0755 /usr/share/nginx/html && \
     chmod 0770 /usr/share/nginx/html/config && \
     chmod 0600 /usr/share/nginx/html/config/* && \
-    rm /usr/share/nginx/html/index.html
+    rm /usr/share/nginx/html/index.html && \
+    chown -R www-data:www-data /usr/share/nginx/html
 
 # Install MaxMind GeoCity Lite database
 RUN cd /usr/share/nginx/html/misc && \
@@ -47,7 +47,7 @@ RUN cd /usr/share/nginx/html/misc && \
 
 ADD config/piwik-schema.sql /usr/share/nginx/html/config/base-schema.sql
 
-ADD scripts/generate-certs.sh /etc/my_init.d/05-certs.sh
+#ADD scripts/generate-certs.sh /etc/my_init.d/05-certs.sh
 ADD scripts/init-piwik.sh /etc/my_init.d/10-piwik.sh
 
 RUN touch /etc/service/sshd/down
