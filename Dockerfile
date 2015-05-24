@@ -3,7 +3,8 @@ MAINTAINER Brian Prodoehl <bprodoehl@connectify.me>
 
 ENV HOME /root
 CMD ["/sbin/my_init"]
-EXPOSE 80 443
+EXPOSE 80
+#EXPOSE 443
 
 # 0.9.15 is getting a bit long in the tooth, so lets grab security fixes
 RUN apt-get update && apt-get -y dist-upgrade
@@ -12,7 +13,7 @@ RUN echo "deb http://ppa.launchpad.net/nginx/development/ubuntu $(lsb_release -s
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys C300EE8C
 RUN apt-get update -q && \
     apt-get install -qy mysql-client nginx php5-cli php5-gd php5-fpm php5-json \
-                        php5-mysql php5-curl wget && \
+                        php5-mysql php5-curl wget php5-geoip && \
     apt-get clean
 
 RUN mkdir /etc/service/nginx
@@ -43,7 +44,8 @@ RUN cd /usr/share/nginx/html && \
 RUN cd /usr/share/nginx/html/misc && \
     wget http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz && \
     gunzip GeoLiteCity.dat.gz && \
-    chown www-data:www-data GeoLiteCity.dat
+    cp GeoLiteCity.dat GeoIPCity.dat && \
+    chown www-data:www-data GeoLiteCity.dat GeoIPCity.dat
 
 ADD config/piwik-schema.sql /usr/share/nginx/html/config/base-schema.sql
 
