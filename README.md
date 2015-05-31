@@ -8,6 +8,27 @@ This Docker container strives to be a production-ready flexible solution to use 
 
 Getting Started
 ----------------
+### Linked with a MySQL container
+#### With Docker Compose
+First, rename docker-compose-template.yml file :
+```
+mv docker-compose-template.yml docker-compose.yml
+```
+Then edit it to match your preferences.
+
+Once done, build the containers : `docker-compose build` or alternatively build&run it : `docker-compose up`
+#### Without Docker Compose 
+##### Build
+`docker build -t piwik .`
+##### Run
+First, run the MySQL container : `docker run -d --name=piwik-mysql -e MYSQL_USER=piwik -e MYSQL_PASSWORD=piwik -e MYSQL_ROOT_PASSWORD=piwik -e MYSQL_DATABASE=piwik -v /srv/piwik-mysql:/var/lib/mysql mysql`
+
+Then run the Piwik container : `docker run -d --name=piwik --link piwik-mysql:db -p 8080:80 -p 8443:443 -e PIWIK_SEED_DATABASE=true -e PIWIK_USER=admin -e PIWIK_PASSWORD=password  piwik`
+### Use an external MySQL server
+##### Build
+`docker build -t piwik .`
+##### Run
+Run the Piwik container : `docker run -d --name=piwik --link piwik-mysql:db -p 8080:80 -p 8443:443 -e PIWIK_SEED_DATABASE=true -e PIWIK_USER=admin -e PIWIK_PASSWORD=password  piwik`
 
 Piwik connects to a MySQL database.  You have your choice of running that in a separate container alongside the Piwik container on the same Docker host, running it on an entirely separate server, or even using a hosted MySQL solution (such as Amazon RDS). All of this information is passed along to the Piwik container in environment variables at container creation time, and the environment variables are listed below.
 

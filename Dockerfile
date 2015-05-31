@@ -4,7 +4,7 @@ MAINTAINER Brian Prodoehl <bprodoehl@connectify.me>
 ENV HOME /root
 CMD ["/sbin/my_init"]
 EXPOSE 80
-#EXPOSE 443
+EXPOSE 443
 
 # 0.9.15 is getting a bit long in the tooth, so lets grab security fixes
 RUN apt-get update && apt-get -y dist-upgrade
@@ -23,7 +23,8 @@ RUN mkdir /etc/service/php5-fpm
 ADD runit/php5-fpm.sh /etc/service/php5-fpm/run
 
 ADD config/nginx.conf /etc/nginx/nginx.conf
-ADD config/nginx-default.conf /etc/nginx/sites-available/default
+ADD config/nginx-piwik.conf /etc/nginx/sites-enabled/piwik.conf
+ADD config/nginx-piwik-ssl.conf /etc/nginx/sites-enabled/piwik-ssl.conf
 ADD config/php.ini /etc/php5/fpm/php.ini
 
 RUN cd /usr/share/nginx/html && \
@@ -49,7 +50,9 @@ RUN cd /usr/share/nginx/html/misc && \
 
 ADD config/piwik-schema.sql /usr/share/nginx/html/config/base-schema.sql
 
-#ADD scripts/generate-certs.sh /etc/my_init.d/05-certs.sh
+ADD scripts/generate-certs.sh /etc/my_init.d/05-certs.sh
 ADD scripts/init-piwik.sh /etc/my_init.d/10-piwik.sh
 
 RUN touch /etc/service/sshd/down
+
+VOLUME /var/log/nginx/
