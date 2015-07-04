@@ -69,7 +69,6 @@ if [ ! -z $DB_TABLES_PREFIX ]; then
   sed -i "/tables_prefix =/c\tables_prefix = \"$DB_TABLES_PREFIX\"" $CONFIG_FILE
 fi
 
-DB_CHARSET=utf8
 # The charset of the database for Piwik
 if [ ! -z $DB_CHARSET ]; then
   sed -i "/charset =/c\charset = \"$DB_CHARSET\"" $CONFIG_FILE
@@ -97,8 +96,8 @@ if [ ! -z $NEW_INSTALL ]; then
 		1,
 		'',
 		'',
-		'Europe/Paris',
-		'EUR',
+		'UTC',
+		'USD',
 		'',
 		'',
 		'',

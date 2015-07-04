@@ -3,8 +3,7 @@ MAINTAINER Brian Prodoehl <bprodoehl@connectify.me>
 
 ENV HOME /root
 CMD ["/sbin/my_init"]
-EXPOSE 80
-EXPOSE 443
+EXPOSE 80 443
 
 # 0.9.15 is getting a bit long in the tooth, so lets grab security fixes
 RUN apt-get update && apt-get -y dist-upgrade
@@ -28,9 +27,10 @@ ADD config/nginx-piwik-ssl.conf /etc/nginx/sites-enabled/piwik-ssl.conf
 ADD config/php.ini /etc/php5/fpm/php.ini
 
 RUN cd /usr/share/nginx/html && \
-    wget http://builds.piwik.org/piwik.tar.gz && \
-    tar -xzf piwik.tar.gz && \
-    rm piwik.tar.gz && \
+    export PIWIK_VERSION=2.13.1 && \
+    wget http://builds.piwik.org/piwik-${PIWIK_VERSION}.tar.gz && \
+    tar -xzf piwik-${PIWIK_VERSION}.tar.gz && \
+    rm piwik-${PIWIK_VERSION}.tar.gz && \
     mv piwik/* . && \
     rm -r piwik && \
     chown -R www-data:www-data /usr/share/nginx/html && \
