@@ -12,7 +12,7 @@ RUN echo "deb http://ppa.launchpad.net/nginx/development/ubuntu $(lsb_release -s
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys C300EE8C
 RUN apt-get update -q && \
     apt-get install -qy mysql-client nginx php5-cli php5-gd php5-fpm php5-json \
-                        php5-mysql php5-curl wget && \
+                        php5-mysql php5-curl wget php5-geoip && \
     apt-get clean
 
 RUN mkdir /etc/service/nginx
@@ -22,28 +22,31 @@ RUN mkdir /etc/service/php5-fpm
 ADD runit/php5-fpm.sh /etc/service/php5-fpm/run
 
 ADD config/nginx.conf /etc/nginx/nginx.conf
-ADD config/nginx-default.conf /etc/nginx/sites-available/default
+ADD config/nginx-piwik.conf /etc/nginx/sites-enabled/piwik.conf
+ADD config/nginx-piwik-ssl.conf /etc/nginx/sites-enabled/piwik-ssl.conf
 ADD config/php.ini /etc/php5/fpm/php.ini
 
 RUN cd /usr/share/nginx/html && \
-    export PIWIK_VERSION=2.10.0 && \
+    export PIWIK_VERSION=2.13.1 && \
     wget http://builds.piwik.org/piwik-${PIWIK_VERSION}.tar.gz && \
     tar -xzf piwik-${PIWIK_VERSION}.tar.gz && \
     rm piwik-${PIWIK_VERSION}.tar.gz && \
     mv piwik/* . && \
     rm -r piwik && \
     chown -R www-data:www-data /usr/share/nginx/html && \
-    mkdir /usr/share/nginx/html/tmp && \
-    chmod 0770 /usr/share/nginx/html/tmp && \
+    chmod 0755 /usr/share/nginx/html/tmp && \
+    chmod 0755 /usr/share/nginx/html && \
     chmod 0770 /usr/share/nginx/html/config && \
     chmod 0600 /usr/share/nginx/html/config/* && \
-    rm /usr/share/nginx/html/index.html
+    rm /usr/share/nginx/html/index.html && \
+    chown -R www-data:www-data /usr/share/nginx/html
 
 # Install MaxMind GeoCity Lite database
 RUN cd /usr/share/nginx/html/misc && \
     wget http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz && \
     gunzip GeoLiteCity.dat.gz && \
-    chown www-data:www-data GeoLiteCity.dat
+    cp GeoLiteCity.dat GeoIPCity.dat && \
+    chown www-data:www-data GeoLiteCity.dat GeoIPCity.dat
 
 ADD config/piwik-schema.sql /usr/share/nginx/html/config/base-schema.sql
 
@@ -51,3 +54,5 @@ ADD scripts/generate-certs.sh /etc/my_init.d/05-certs.sh
 ADD scripts/init-piwik.sh /etc/my_init.d/10-piwik.sh
 
 RUN touch /etc/service/sshd/down
+
+VOLUME /var/log/nginx/
