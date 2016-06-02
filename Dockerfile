@@ -43,7 +43,8 @@ RUN cd /usr/share/nginx/html && \
 RUN cd /usr/share/nginx/html/misc && \
     wget http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz && \
     gunzip GeoLiteCity.dat.gz && \
-    chown www-data:www-data GeoLiteCity.dat
+    chown www-data:www-data GeoLiteCity.dat && \
+	mv GeoLiteCity.dat GeoIPCity.dat
 
 ADD config/piwik-schema.sql /usr/share/nginx/html/config/base-schema.sql
 
